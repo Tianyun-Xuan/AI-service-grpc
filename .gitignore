@@ -164,4 +164,3 @@ cython_debug/
 .reports/
 .scannerwork/
 logs/
-*_pb2*

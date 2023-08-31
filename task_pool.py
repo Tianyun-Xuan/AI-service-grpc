@@ -4,8 +4,21 @@ import threading
 import time
 import ai_grpc_heartbeat_pb2
 
+import json
+
+
 def Method_Wrapper(arg):
-    return TaskResult()
+    msg = f"Method_Wrapper: {arg}"
+    flag = False
+    try:
+        arg_str = json.loads(arg)
+        # result = your_methode(**arg_str)
+        time.sleep(5)
+        flag = True
+    except Exception as e:
+        msg = f"Method_Wrapper: {e}"
+        flag = False
+    return TaskResult(msg, flag)
 
 
 class TaskResult:

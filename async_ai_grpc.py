@@ -86,7 +86,7 @@ class AIGrpcTaskService(ai_grpc_service_pb2_grpc.AIGprcTaskServiceServicer):
         if self.status == ai_grpc_heartbeat_pb2.StatusCode.SLEEPING:
             self.status = ai_grpc_heartbeat_pb2.StatusCode.WORKING
             self.status_message = "Working"
-            self.task_queue.submit(self.function, self.status_message)
+            self.task_queue.submit(self.function, request.msg)
             await self.heartbeat_queue.put(self.heartbeat_sender.send(self.status, self.status_message))
             return ai_grpc_service_pb2.TaskReply(code=ai_grpc_service_pb2.ResponseCode.OK)
         else:
@@ -103,7 +103,7 @@ class AIGrpcTaskService(ai_grpc_service_pb2_grpc.AIGprcTaskServiceServicer):
                     self.status_message = status_list[-1].msg
             else:
                 await self.heartbeat_queue.put(self.heartbeat_sender.send(self.status, self.status_message))
-            await asyncio.sleep(5)
+            await asyncio.sleep(1)
 
     async def process_tasks(self):
         while True:

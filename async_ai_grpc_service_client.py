@@ -5,8 +5,8 @@ import asyncio
 import logging
 
 import grpc
-from generated import ai_grpc_service_pb2
-from generated import ai_grpc_service_pb2_grpc
+import ai_grpc_service_pb2
+import ai_grpc_service_pb2_grpc
 
 
 async def run() -> None:

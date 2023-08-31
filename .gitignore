@@ -163,4 +163,5 @@ cython_debug/
 # SonarQube
 .reports/
 .scannerwork/
-generated/
+logs/
+*_pb2*

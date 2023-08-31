@@ -2,18 +2,18 @@ import asyncio
 import logging
 
 import grpc
-from generated import ai_grpc_heartbeat_pb2
-from generated import ai_grpc_heartbeat_pb2_grpc
+import ai_grpc_heartbeat_pb2
+import ai_grpc_heartbeat_pb2_grpc
 
 
 class Greeter(ai_grpc_heartbeat_pb2_grpc.AIGprcHeartServicer):
-    async def HeartBeat(
+    def HeartBeat(
         self,
         request: ai_grpc_heartbeat_pb2.HeartStatus,
         context: grpc.aio.ServicerContext,
     ) -> ai_grpc_heartbeat_pb2.HeartReply:
         print("HeartBeat: %s" % request.status)
-        return ai_grpc_heartbeat_pb2.HeartReply(msg="request: %s" % request.status)
+        return ai_grpc_heartbeat_pb2.HeartReply(msg="test")
 
 
 async def serve() -> None:

@@ -24,7 +24,8 @@ service AIGprcHeart {
 enum StatusCode {
   SLEEPING = 0;  // no task
   WORKING = 1;
-
+  SYSTEM_EXCEPTION = 101;
+  TASK_EXCEPTION = 102;
 }
 
 message HeartStatus {

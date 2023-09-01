@@ -8,32 +8,31 @@ import json
 
 
 def Method_Wrapper(arg):
-    msg = f"Method_Wrapper: {arg}"
-    flag = False
+    msg = ""
+    status = ai_grpc_heartbeat_pb2.StatusCode.SLEEPING
     try:
         arg_str = json.loads(arg)
         # result = your_methode(**arg_str)
         time.sleep(5)
-        flag = True
+        msg = f"[Method_Wrapper] Finished task : {arg}"
     except Exception as e:
-        msg = f"Method_Wrapper: {e}"
-        flag = False
-    return TaskResult(msg, flag)
+        msg = f"[Method_Wrapper] Failed task : {e}"
+        status = ai_grpc_heartbeat_pb2.StatusCode.TASK_EXCEPTION
+    return TaskResult(msg, status)
 
 
 class TaskResult:
-    def __init__(self, msg: str = "", flag: bool = True, status: ai_grpc_heartbeat_pb2.StatusCode = ai_grpc_heartbeat_pb2.StatusCode.SLEEPING):
+    def __init__(self, msg: str = "", status: ai_grpc_heartbeat_pb2.StatusCode = ai_grpc_heartbeat_pb2.StatusCode.SLEEPING):
         self.msg = msg
-        self.flag = flag
         self.status = status
 
     def __str__(self):
         # use json format
-        return f"{{'msg': '{self.msg}', 'flag': {self.flag}, 'status': {self.status}}}"
+        return f"{{'msg': '{self.msg}', 'status': {self.status}}}"
 
     def __eq__(self, __value: object) -> bool:
         if isinstance(__value, TaskResult):
-            return self.msg == __value.msg and self.flag == __value.flag and self.status == __value.status
+            return self.msg == __value.msg and self.status == __value.status
         else:
             return False
 
@@ -64,7 +63,8 @@ class TaskPool:
                 # Store result in the result queue
                 self.result_queue.put(result)
             except Exception as e:
-                self.result_queue.put(TaskResult(e, False))
+                self.result_queue.put(TaskResult(
+                    e, False, ai_grpc_heartbeat_pb2.StatusCode.SYSTEM_EXCEPTION))
             self.queue.task_done()
 
     def submit(self, method, arg):

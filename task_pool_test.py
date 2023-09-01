@@ -3,6 +3,8 @@ from unittest.mock import Mock
 from task_pool import TaskPool, TaskResult
 
 '''TaskPool test'''
+
+
 class TestTaskPool(unittest.TestCase):
     def setUp(self):
         self.max_workers = 3
@@ -38,7 +40,6 @@ class TestTaskPool(unittest.TestCase):
         # Get and check the results
         results = self.task_pool.get_results()
         self.assertEqual(len(results), 1)
-        self.assertFalse(results[0].flag)
         self.assertIsInstance(results[0].msg, ValueError)
 
 

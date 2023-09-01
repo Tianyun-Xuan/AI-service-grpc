@@ -7,6 +7,13 @@ import logging
 import grpc
 import ai_grpc_service_pb2
 import ai_grpc_service_pb2_grpc
+import json
+
+task_parameters = {
+    "task": "test"
+}
+
+task_string = json.dumps(task_parameters)
 
 
 async def run() -> None:
@@ -14,7 +21,8 @@ async def run() -> None:
         stub = ai_grpc_service_pb2_grpc.AIGprcTaskServiceStub(channel)
         response = await stub.SendTask(ai_grpc_service_pb2.TaskRequest(
             action=ai_grpc_service_pb2.ActionCode.DEFAULT,
-            msg="Hello World!"))
+            msg=task_string
+        ))
     print("Greeter client received: ", response.code)
 
 

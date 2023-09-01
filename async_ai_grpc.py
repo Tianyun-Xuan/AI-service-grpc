@@ -63,7 +63,7 @@ class AIGrpcTaskService(ai_grpc_service_pb2_grpc.AIGprcTaskServiceServicer):
             ip_address, port, service_id)
 
         self.status = ai_grpc_heartbeat_pb2.StatusCode.SLEEPING
-        self.status_message = "Heartbeat"
+        self.status_message = "Sleeping"
 
         self.heartbeat_queue = asyncio.Queue()
         self.task_queue = TaskPool(max_workers=1)
@@ -92,20 +92,21 @@ class AIGrpcTaskService(ai_grpc_service_pb2_grpc.AIGprcTaskServiceServicer):
         else:
             return ai_grpc_service_pb2.TaskReply(code=ai_grpc_service_pb2.ResponseCode.Error)
 
-    async def insert_tasks(self):
+    async def process_tasks(self):
         while True:
             status_list = self.task_queue.get_results()
 
             if (status_list.__len__() > 0):
                 for status in status_list:
-                    await self.heartbeat_queue.put(self.heartbeat_sender.send(status.status, str(status)))
-                    self.status = status_list[-1].status
-                    self.status_message = status_list[-1].msg
+                    await self.heartbeat_queue.put(self.heartbeat_sender.send(status.status, str(status.msg)))
+                if status_list[-1].status != ai_grpc_heartbeat_pb2.StatusCode.WORKING:
+                    self.status = ai_grpc_heartbeat_pb2.StatusCode.SLEEPING
+                    self.status_message = "Sleeping"
             else:
                 await self.heartbeat_queue.put(self.heartbeat_sender.send(self.status, self.status_message))
             await asyncio.sleep(1)
 
-    async def process_tasks(self):
+    async def heartbeat_tasks(self):
         while True:
             task = await self.heartbeat_queue.get()
             await task
@@ -123,7 +124,7 @@ async def main(params):
 
     server_task = asyncio.create_task(server.start())
     tasks = [
-        service.insert_tasks(),     # regular heartbeat
+        service.heartbeat_tasks(),     # regular heartbeat
         service.process_tasks(),    # send heartbeat
         server_task                 # server task
     ]

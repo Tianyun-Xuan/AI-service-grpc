@@ -30,7 +30,7 @@ import ai_grpc_service_pb2_grpc
 import ai_grpc_heartbeat_pb2
 import ai_grpc_heartbeat_pb2_grpc
 
-from task_pool import TaskPool, TaskResult, Method_Wrapper
+from task_pool import TaskPool, TaskResult, method_wrapper
 
 try:
     from _ai_grpc_metadata import __version__
@@ -120,7 +120,7 @@ class AIGrpcTaskService(ai_grpc_service_pb2_grpc.AIGprcTaskServiceServicer):
 
 async def main(params):
     service = AIGrpcTaskService(
-        params.heartbeat_address, params.heartbeat_port, params.uuid, Method_Wrapper)
+        params.heartbeat_address, params.heartbeat_port, params.uuid, method_wrapper)
     server = grpc.aio.server()
     ai_grpc_service_pb2_grpc.add_AIGprcTaskServiceServicer_to_server(
         service, server)

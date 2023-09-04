@@ -1,46 +1,19 @@
-''''''
+"""
+This module is task pool for ai_grpc.py
+
+Author: Tianyun Xuan (tianyun.xuan@cn.innovusion.com)
+
+"""
 import queue
 import threading
-import time
 import ai_grpc_heartbeat_pb2
-
-import json
-
-
-def Method_Wrapper(arg):
-    msg = ""
-    status = ai_grpc_heartbeat_pb2.StatusCode.SLEEPING
-    try:
-        arg_str = json.loads(arg)
-        # result = your_methode(**arg_str)
-        time.sleep(5)
-        msg = f"[Method_Wrapper] Finished task : {arg}"
-    except Exception as e:
-        msg = f"[Method_Wrapper] Failed task : {e}"
-        status = ai_grpc_heartbeat_pb2.StatusCode.TASK_EXCEPTION
-    return TaskResult(msg, status)
-
-
-class TaskResult:
-    def __init__(self, msg: str = "", status: ai_grpc_heartbeat_pb2.StatusCode = ai_grpc_heartbeat_pb2.StatusCode.SLEEPING):
-        self.msg = msg
-        self.status = status
-
-    def __str__(self):
-        # use json format
-        return f"{{'msg': '{self.msg}', 'status': {self.status}}}"
-
-    def __eq__(self, __value: object) -> bool:
-        if isinstance(__value, TaskResult):
-            return self.msg == __value.msg and self.status == __value.status
-        else:
-            return False
+from task_method import TaskResult
 
 
 class TaskPool:
     def __init__(self, max_workers=5):
         self.queue = queue.Queue()
-        self.result_queue = queue.Queue()  # Added result queue
+        self.result_queue = queue.Queue()
         self.workers = []
         self.max_workers = max_workers
         self._create_workers()
@@ -57,15 +30,19 @@ class TaskPool:
             task = self.queue.get()
             if task is None:
                 break
-            method, arg = task
             try:
+
+                method, arg = task
+                if method is None:
+                    raise ValueError("Method is None")
                 result = method(arg)
                 # Store result in the result queue
                 self.result_queue.put(result)
             except Exception as e:
                 self.result_queue.put(TaskResult(
-                    e, False, ai_grpc_heartbeat_pb2.StatusCode.SYSTEM_EXCEPTION))
-            self.queue.task_done()
+                    str(e), ai_grpc_heartbeat_pb2.StatusCode.TASK_EXCEPTION))
+            finally:
+                self.queue.task_done()
 
     def submit(self, method, arg):
         self.queue.put((method, arg))
@@ -81,7 +58,10 @@ class TaskPool:
 
     def get_results(self):
         results = []
-        while not self.result_queue.empty():
-            result = self.result_queue.get()
-            results.append(result)
+        while True:
+            try:
+                result = self.result_queue.get_nowait()
+                results.append(result)
+            except queue.Empty:
+                break
         return results

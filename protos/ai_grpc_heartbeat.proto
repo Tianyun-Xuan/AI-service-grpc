@@ -34,6 +34,7 @@ message HeartStatus {
   uint64 timestamp = 3;
   string msg = 4;
   string ip = 5;
+  string version = 6;
 }
 
 message HeartReply {

@@ -32,6 +32,11 @@ import ai_grpc_heartbeat_pb2_grpc
 
 from task_pool import TaskPool, TaskResult, Method_Wrapper
 
+try:
+    from _ai_grpc_metadata import __version__
+except ImportError:
+    __version__ = "unknown"
+
 
 class HeartbeatSender:
 
@@ -49,6 +54,7 @@ class HeartbeatSender:
         request.timestamp = int(time.time())
         request.msg = msg
         request.ip = self.ip_address
+        request.version = __version__
 
         response = await self.stub.HeartBeat(request)
         logging.info("HeartbeatSender: %s", response)

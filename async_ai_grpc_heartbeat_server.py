@@ -12,7 +12,7 @@ class Greeter(ai_grpc_heartbeat_pb2_grpc.AIGprcHeartServicer):
         request: ai_grpc_heartbeat_pb2.HeartStatus,
         context: grpc.aio.ServicerContext,
     ) -> ai_grpc_heartbeat_pb2.HeartReply:
-        logging.info("HeartBeat: %s, Msg: %s" % (request.status, request.msg))
+        logging.info("HeartBeat: %s, Msg: %s, Version: %s" % (request.status, request.msg, request.version))
         return ai_grpc_heartbeat_pb2.HeartReply(msg="test")
 
 

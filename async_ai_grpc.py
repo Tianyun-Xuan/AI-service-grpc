@@ -30,7 +30,8 @@ import ai_grpc_service_pb2_grpc
 import ai_grpc_heartbeat_pb2
 import ai_grpc_heartbeat_pb2_grpc
 
-from task_pool import TaskPool, TaskResult, method_wrapper
+from task_pool import TaskPool, TaskResult
+from task_method import method_wrapper
 
 try:
     from _ai_grpc_metadata import __version__
@@ -40,9 +41,9 @@ except ImportError:
 
 class HeartbeatSender:
 
-    def __init__(self, ip_address: str, port: str, service_id: int) -> None:
+    def __init__(self, task_address: str, ip_address: str, port: str, service_id: int) -> None:
         self.service_id = service_id
-        self.ip_address = ip_address
+        self.ip_address = task_address
         self.channel = grpc.aio.insecure_channel(
             f"{ip_address}:{port}")
         self.stub = ai_grpc_heartbeat_pb2_grpc.AIGprcHeartStub(self.channel)
@@ -61,12 +62,10 @@ class HeartbeatSender:
 
 
 class AIGrpcTaskService(ai_grpc_service_pb2_grpc.AIGprcTaskServiceServicer):
-    def __init__(self, ip_address: str, port: str, service_id: int, function) -> None:
+    def __init__(self, task_address: str, ip_address: str, port: str, service_id: int, function) -> None:
         self.service_id = service_id
-        self.ip_address = ip_address
-        self.port = port
-        self.heartbeat_sender = HeartbeatSender(
-            ip_address, port, service_id)
+        self.heartbeat_sender = HeartbeatSender(task_address,
+                                                ip_address, port, service_id)
 
         self.status = ai_grpc_heartbeat_pb2.StatusCode.SLEEPING
         self.status_message = "Sleeping"
@@ -119,8 +118,8 @@ class AIGrpcTaskService(ai_grpc_service_pb2_grpc.AIGprcTaskServiceServicer):
 
 
 async def main(params):
-    service = AIGrpcTaskService(
-        params.heartbeat_address, params.heartbeat_port, params.uuid, method_wrapper)
+    service = AIGrpcTaskService(params.task_address,
+                                params.heartbeat_address, params.heartbeat_port, params.uuid, method_wrapper)
     server = grpc.aio.server()
     ai_grpc_service_pb2_grpc.add_AIGprcTaskServiceServicer_to_server(
         service, server)

@@ -7,6 +7,16 @@ Author: Tianyun Xuan (tianyun.xuan@cn.innovusion.com)
 import ai_grpc_heartbeat_pb2
 import time
 import json
+import subprocess
+import os
+
+def run(arg):
+    docker_name = "f2fd16a2359a"
+    script_excu = "python3"
+    script_name = "/apollo/data/test.py"
+    command = f'docker exec -it {docker_name} {script_excu} {script_name} {arg}'
+    process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
+    process.wait()
 
 
 class TaskResult:
@@ -30,8 +40,7 @@ def method_wrapper(arg):
     status = ai_grpc_heartbeat_pb2.StatusCode.SLEEPING
     try:
         arg_str = json.loads(arg)
-        # replace sleep with [result = your_method(**arg_str)]
-        time.sleep(10)
+        run(arg)
         msg = f"[Method_Wrapper] Finished task : {arg_str}"
     except Exception as e:
         msg = f"[Method_Wrapper] Failed task : {e}"

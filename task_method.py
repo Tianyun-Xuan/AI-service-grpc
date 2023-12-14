@@ -9,14 +9,19 @@ import time
 import json
 import subprocess
 import os
+import base64
 
 def run(arg):
     docker_name = "f2fd16a2359a"
     script_excu = "python3"
     script_name = "/apollo/data/test.py"
-    command = f'docker exec -it {docker_name} {script_excu} {script_name} {arg}'
+    encoded_data = base64.b64encode(arg.encode("UTF-8"))
+    command = f'docker exec -it {docker_name} {script_excu} {script_name} {encoded_data}'
     process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
     process.wait()
+    
+    # decoded_data = base64.b64decode(os.sys.argv[1].encode("UTF-8"))
+    # run(**json.loads(decoded_data.decode()))
 
 
 class TaskResult:

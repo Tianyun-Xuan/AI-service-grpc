@@ -1,6 +1,20 @@
 # AI-service-grpc
 
-## 更新记录
+## How to use
+    1. install dependency and build proto file
+        ./build.sh
+    2. change parameters in file [task_method.py]
+        {docker_name}
+        {scripte_name}
+    3. change ip_address and port in file [async_ai_grpc.py]
+        {uuid} 
+        {heartbeat_address}
+        {heartbeat_port}
+        {task_address}
+        {task_port}
+        {log_dir}
+
+## Update logs
 ### [1.0.1] 04-09-2023
     1. 把方法入口包装单独拿出来，方便部署时修改
     2. 修改了任务池中的Exception逻辑
